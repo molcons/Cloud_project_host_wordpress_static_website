@@ -1,0 +1,30 @@
+# LESSONS LEARNED 
+
+VPC 
+During my setup of the VPC, I tried to connect to an instance via the AWS CLI, but it would not work. 
+After troubleshooting, I realized my choice of the non-default region [ us-east-2 instead of east-1] 
+meant that I needed to add addition arguments to my command to make it work, specifically –
+aws ec2-instance-connect ssh --region us-east-2 --instance-id i-0174ed1fded208cb1
+
+Also, the project architecture helped me to better understand the relationships of security groups.
+
+EFS / RDS
+When preparing for the project, I used a private password for the RDS inside the AWS console, 
+but later I changed it to a generic one. The instructions require hard coding the password into the WP config file. 
+Therefore, a generic password was substituted for the project, as the config file can be viewed by others. 
+
+DNS / ASG / SSL certs
+During the project, a sole EC2 instance is used to test the WordPress install. 
+Manual adjustments are made to the config file, allowing HTTPS. However, when switching to ASG and an EC2 template, 
+those manual configs were no longer present, thus the site would only display in http. 
+So, I manually configured the live ec2 instances with the needed adjustment, so that https functioned. 
+
+/* SSL Settings */
+define('FORCE_SSL_ADMIN', true);
+
+// Get true SSL status from AWS load balancer
+if(isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {
+  $_SERVER['HTTPS'] = '1';
+}
+In a normal deployment, the ec2 template would need the config file saved and accessible to the template, 
+so that all scaled ec2 instances have secure https access. 
